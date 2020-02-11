@@ -1,6 +1,8 @@
 # Контроллер водоподготовки и водоснабжения
 Для контроллера используется плата Arduino DUE или Arduino DUE Core (ARM SAM3x8e).<br>
 
+Детально: http://vad-7.blogspot.com/2019/12/blog-post.html <br>
+
 Также, как минимум, нужны платы: реле, часов DS3231 + EEPROM, сети на W5500.
 <br>
 <br>
