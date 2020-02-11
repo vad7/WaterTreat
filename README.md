@@ -3,6 +3,7 @@
 Для контроллера используется плата Arduino DUE или Arduino DUE Core (ARM SAM3x8e).<br>
 Также, как минимум, нужны платы: реле, часов DS3231 + EEPROM, сети на W5500.
 <br>
+<br>
 Возможности:<br>
 * Управление дозатором реагента по расходу
 * Промывка двух фильтров (например - обезжелезивателя, умягчителя) по времени и по расходу<br>
@@ -18,7 +19,5 @@
 * Датчик температуры DS18B20 или NTC<br>
 <br>
 <br>
-![image](https://user-images.githubusercontent.com/6220128/74215978-07636480-4cb4-11ea-9e3d-3f5de4c28e7e.png)
-<br>
-![image](https://user-images.githubusercontent.com/6220128/74216039-2f52c800-4cb4-11ea-9294-9f23727f4b40.png)
-<br>
+![Схема](https://user-images.githubusercontent.com/6220128/74215978-07636480-4cb4-11ea-9e3d-3f5de4c28e7e.png)
+![Датчики](https://user-images.githubusercontent.com/6220128/74216039-2f52c800-4cb4-11ea-9294-9f23727f4b40.png)
