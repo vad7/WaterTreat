@@ -21,3 +21,4 @@
 
 ![Схема](https://user-images.githubusercontent.com/6220128/74215978-07636480-4cb4-11ea-9e3d-3f5de4c28e7e.png)
 ![Датчики](https://user-images.githubusercontent.com/6220128/74216039-2f52c800-4cb4-11ea-9294-9f23727f4b40.png)
+![Плата](https://user-images.githubusercontent.com/6220128/74216629-0df2db80-4cb6-11ea-9af6-9b545f193d46.png)
