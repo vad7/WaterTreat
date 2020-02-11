@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>Схема. Водоподготовка</title>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+	table { width: 80%; }
+	td, th { font-size: 1em; border: 0; text-align: left; }
+</style>
+<script src='scripts.js'></script>
+<script>
+	urlupdate = 2000;
+	window.onload = function() {
+		loadParam("get_WSUY,get_WSA,get_WSDD,get_WSD,get_WSRC,get_WSRD,get_WSRSC,get_WSRSD");
+		updateParam("get_Relay(RWOFF),get_WDIS,get_Relay(RDRAIN),get_Relay(RBST2),get_Relay(RFILL),get_Relay(RFEEDP),get_ADCLvL(LTANK),get_Wgt(LvL),get_Input(REG),get_Input(REGBW),get_Input(REG2),get_Err(B),get_Flow(FLOW),get_ADC(PWATER),get_MODED,get_PWR,get_Temp(AIR),get_WSRS,get_WSRSS,get_WSUD,get_WST,get_WSRL,get_WSRSL,get_WSB");
+		updateParam("get_tblErr");
+	};
+</script>	
+</head>
+<body class="plan">
+<div id="menu" class="menu"><script src="menu.js"></script></div>
+<div class="content">
+<h1>Водоподготовка</h1>
+<div class="visualization">
+	<div id="get_relay-rwoff" style="display:none"></div>
+	<div id="get_wdis" style="display:none"></div>
+	<div id="get_relay-rdrain" style="display:none"></div>
+	<div id="get_relay-rbst2" style="display:none"></div>
+	<div id="get_relay-rfill" style="display:none"></div>
+	<div id="get_relay-rfeedp" style="display:none"></div>
+	<div id="get_adclvl-ltank" name="Top-318" style="height:0;max-height:212"></div>
+	<div id="get_wgt-lvl" name="Top-324" style="height:0;max-height:92"></div>
+	<div id="get_input-reg" style="display:none"></div>
+	<div id="get_input-regbw" style="display:none"></div>
+	<div id="get_input-reg2" style="display:none"></div>
+	<span id="get_flow-flow" class="blue">-.-</span>
+	<span id="get_adc-pwater" class="red">-.-</span>
+	<span id="get_err-b" class="charsw" title=" ⚠"></span>
+</div>
+<div class="row1">
+<table>
+	<tr><td width="22%" style="font-weight: bold;" nowrap>Состояние:</td><td width="11%" nowrap><b><span id="get_moded"></span></b></td><td width="22%" style="font-weight: normal;">Электричество, кВт:</td><td width="11%"><span id="get_pwr"></span></td><td width="22%" style="font-weight: normal;">Температура:</td><td width="11%"><span id="get_temp-air">-</span>&deg;</td></tr>
+	<tr><td style="font-weight:normal;" nowrap>Сегодня, л:</td><td id="get_wsud"></td><td style="font-weight: normal;">Вчера, л:</td><td id="get_wsuy"></td><td style="font-weight: normal;">Среднее за день, л:</td><td id="get_wsa"></td></tr>
+	<tr><td style="font-weight:normal;" nowrap>Бак НС, л:</td><td id="get_wsb"></td><td style="font-weight:normal;" nowrap>Слито (<span id="get_wsdd">-</span>), л:</td><td id="get_wsd"></td><td style="font-weight: normal;">Итого, м³:</td><td id="get_wst"></td><td style="font-weight: normal;"></td></tr>
+	<tr><td style="font-weight:bold;" nowrap>Обезжелезивание, рег:</td><td id="get_wsrc"></td><td></td><td></td><td></td><td></td></tr>
+	<tr><td style="font-weight:normal;" nowrap>C регенерации, дней:</td><td id="get_wsrd"></td><td style="font-weight: normal;">C регенерации, л:</td><td id="get_wsrs"></td><td style="font-weight: normal;" nowrap>За регенерацию, л:</td><td id="get_wsrl"></td></tr>
+	<tr><td style="font-weight:bold;" nowrap>Умягчитель, рег:</td><td id="get_wsrsc"></td><td></td><td></td><td></td><td></td></tr>
+	<tr><td style="font-weight:normal;" nowrap>C регенерации, дней:</td><td id="get_wsrsd"></td><td style="font-weight: normal;">C регенерации, л:</td><td id="get_wsrss"></td><td style="font-weight: normal;" nowrap>За регенерацию, л:</td><td id="get_wsrsl"></td></tr>
+	<tr><td style="font-weight:normal;"></td><td></td><td style="font-weight: normal;"></td><td></td><td style="font-weight: normal;"></td><td></td></tr>
+</table>
+</div>
+<div class="row1">
+<table id="get_tblerr_t" hidden>
+	<thead><tr><th>Время ошибки</th><th>Код</th><th>Описание ошибки <input type="submit" value="Очистить" onclick='loadParam("RESET_ERR")' style="float:right;"></th></tr></thead>
+	<tbody id="get_tblerr">
+	</tbody>
+</table>
+</div>
+</div>
+</body>
+</html>

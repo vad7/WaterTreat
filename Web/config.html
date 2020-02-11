@@ -1,0 +1,202 @@
+<html>
+<head>
+<title>Настройки Водоподготовки.</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type='text/javascript' src='scripts.js'></script>
+<script type="text/javascript">
+window.onload = function() {
+	loadParam("get_Opt(FPMF),get_Opt(UBR),get_Opt(RH),get_Opt(NRW),get_Opt(DT),get_Opt(MR),get_Opt(MD),get_Opt(HIST),get_Opt(BEEP),get_Opt(WSPIF),get_Opt(LOGWS),get_Opt(TIME_CHART),get_Opt(PWMLOG),get_Opt(SGL1W_1),get_Opt(SGL1W_2),get_Opt(SGL1W_3),get_Opt(SGL1W_4)");
+	loadParam("get_Opt(MWBT),get_Opt(MWBTF),get_Opt(MPOT),get_Opt(DR),get_Opt(PM),get_Opt(PST),get_WSRC,get_WSRSC,get_WST,get_Opt(WRM),get_Opt(TE),get_Opt(FDT),get_Opt(FT),get_Opt(FTT),get_Opt(UBRS),get_Opt(DBR),get_Opt(WE),get_Opt(CET),get_Opt(DA),get_Opt(BWFD),get_Opt(BWMF)");
+}; 
+function show_all() {
+	var elements = document.getElementsByTagName('input');
+	for(i=0; i<elements.length; i++) elements[i].disabled = false;
+}
+</script>
+</head>
+<body class="test">
+<div id="menu" class="menu"><script src='menu.js'></script></div>
+<div class="content">
+	<h1>Настройки<input type="submit" value="Записать в EEPROM" onclick='loadParam("set_SAVE")'></h1>
+	<div class="row1">
+		<table>
+		<thead><tr><th>Описание</th><th>Значение</th></tr></thead>			
+		<tbody>
+		<tr>
+			<td>Максимальный проток до которого распределяется включение дозатора, лч</td>
+			<td nowrap><input id="get_opt-fpmf" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(FPMF)');"></td>
+		</tr>
+		<tr>
+			<td>Минимальное время работы насосной станции, мсек</td>
+			<td nowrap><input id="get_opt-mwbt" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(MWBT)');"></td>
+		</tr>
+		<tr>
+			<td>Минимальная пауза в работе насосной станции, мсек</td>
+			<td nowrap><input id="get_opt-mwbtf" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(MWBTF)');"></td>
+		</tr>
+		<tr>
+			<td>Минимальное время работы дозирующего насоса, мсек</td>
+			<td nowrap><input id="get_opt-mpot" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(MPOT)');"></td>
+		</tr>
+		<tr>
+			<td>Через сколько делать сброс воды, если не было расхода, ч</td>
+			<td nowrap><input id="get_opt-da" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(DA)');"></td>
+		</tr>
+		<tr>
+			<td>Время сброса воды (если не было расхода), сек</td>
+			<td nowrap><input id="get_opt-dt" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(DT)');"></td>
+		</tr>
+		<tr>
+			<td><b>Регенерация</b></td><td></td>
+		</tr>
+		<tr>
+			<td>Час регенерации (0..23)</td>
+			<td nowrap><input id="get_opt-rh" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(RH)');"></td>
+		</tr>
+		<tr>
+			<td>Не запускать регенерацию в выходные</td>
+			<td><input type="checkbox" id="get_opt-nrw" onChange="setParam('get_Opt(NRW)');"></td>
+		</tr>
+		<tr>
+			<td>Дней до регенерации обезжелезивателя</td>
+			<td nowrap><input id="get_opt-dbr" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(DBR)');"></td>
+		</tr>
+		<tr>
+			<td>Количество литров до регенерации обезжелезивателя</td>
+			<td nowrap><input id="get_opt-ubr" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(UBR)');"></td>
+		</tr>
+		<tr>
+			<td>Количество литров до регенерации умягчителя</td>
+			<td nowrap><input id="get_opt-ubrs" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(UBRS)');"></td>
+		</tr>
+		<tr>
+			<td>Задержка включения дозатора во время обратной промывки, сек</td>
+			<td nowrap><input id="get_opt-bwfd" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(BWFD)');"></td>
+		</tr>
+		<tr>
+			<td>Во время обратной промывки - максимальный проток дозатора, лч</td>
+			<td nowrap><input id="get_opt-bwmf" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(BWMF)');"></td>
+		</tr>
+		<tr>
+			<td><b>Аналоговые датчики</b></td><td></td>
+		</tr>
+		<tr>
+			<td>Нижний предел давления при регенерации, бар</td>
+			<td nowrap><input id="get_opt-wrm" type="number" step="0.01"> <input type="submit" value=">" onclick="setParam('get_Opt(WRM)');"></td>
+		</tr>
+		<tr>
+			<td>Уровень пустого бака - авария, %</td>
+			<td nowrap><input id="get_opt-te" type="number" step="0.01"> <input type="submit" value=">" onclick="setParam('get_Opt(TE)');"></td>
+		</tr>
+		<tr>
+			<td>Низкий уровень реагента - авария, %</td>
+			<td nowrap><input id="get_opt-we" type="number" step="0.01"> <input type="submit" value=">" onclick="setParam('get_Opt(WE)');"></td>
+		</tr>
+		<tr>
+			<td><b>Защиты</b></td><td></td>
+		</tr>
+		<tr>
+			<td>Время пуска мотора насосной станции (для защит), мсек</td>
+			<td nowrap><input id="get_opt-pst" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(PST)');"></td>
+		</tr>
+		<tr>
+			<td>Защита от сухого хода насосной станции - мин. мощность, Вт</td>
+			<td nowrap><input id="get_opt-dr" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(DR)');"></td>
+		</tr>
+		<tr>
+			<td>Защита от перегрузки насосной станции - макс. мощность, Вт</td>
+			<td nowrap><input id="get_opt-pm" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(PM)');"></td>
+		</tr>
+		<tr>
+			<td>Тревога, если за регенерацию обезжелезивателя израсходовано меньше литров</td>
+			<td nowrap><input id="get_opt-mr" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(MR)');"></td>
+		</tr>
+		<tr>
+			<td>Тревога, если слито при сбросе меньше литров</td>
+			<td nowrap><input id="get_opt-md" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(MD)');"></td>
+		</tr>
+		<tr>
+			<td>Время срабатывания датчика протечки для регистрации события, сек</td>
+			<td nowrap><input id="get_opt-fdt" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(FDT)');"></td>
+		</tr>
+		<tr>
+			<td>Время заполнения бака на 2% при отсутствии потребления, сек</td>
+			<td nowrap><input id="get_opt-ftt" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(FTT)');"></td>
+		</tr>
+		<tr>
+			<td>Время ожидания после ликвидации протечки, сек</td>
+			<td nowrap><input id="get_opt-ft" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(FT)');"></td>
+		</tr>
+		<tr>
+			<td>Время ожидания после критических ошибок (пустой бак), сек</td>
+			<td nowrap><input id="get_opt-cet" type="number"> <input type="submit" value=">" onclick="setParam('get_Opt(CET)');"></td>
+		</tr>
+		<tr>
+			<td><b>Дополнительно</b></td><td></td>
+		</tr>
+		<tr>
+			<td>Расположение файлов веб-сервера на SPI Flash (иначе на SD карте)</td>
+			<td><input type="checkbox" id="get_opt-wspif" onChange="setParam('get_Opt(WSPIF)');"></td>
+		</tr>
+		<tr>
+			<td>Интервал накопления точек графиков в памяти, сек.</td>
+			<td nowrap><input id="get_opt-time_chart" type="number" min="1" step="1"> <input type="submit" value=">" onclick="setParam('get_Opt(TIME_CHART)','get_opt-time_chart');"></td>
+		</tr>
+		<tr>
+			<td>Запись истории на SD карту (раз в минуту)</td>
+			<td><input type="checkbox" id="get_opt-hist" onChange="setParam('get_Opt(HIST)');">
+			</td>
+		</tr>
+		<tr>
+			<td>Логировать ошибки электро-счетчика</td>
+			<td><input type="checkbox" id="get_opt-pwmlog" onchange="setParam('get_Opt(PWMLOG)');"></td>
+		</tr>	
+		<tr>
+			<td>Логировать обмен между беспроводными датчиками</td>
+			<td><input type="checkbox" id="get_opt-logws" onchange="setParam('get_Opt(LOGWS)');"></td>
+		</tr>	
+		<tr>
+			<td>Генерация звукового сигнала</td>
+			<td><input type="checkbox" id="get_opt-beep" onchange="setParam('get_Opt(BEEP)');"></td>
+		</tr>					
+		<tr>
+			<td>На первой шине 1-Wire только один датчик температуры</td>
+			<td><input type="checkbox" id="get_opt-sgl1w_1" onchange="setParam('get_Opt(SGL1W_1)');"></td>
+		</tr>	
+		<tr>
+			<td>На второй шине 1-Wire только один датчик температуры</td>
+			<td><input type="checkbox" id="get_opt-sgl1w_2" onchange="setParam('get_Opt(SGL1W_2)');"></td>
+		</tr>	
+		<tr>
+			<td>На третьей шине 1-Wire только один датчик температуры</td>
+			<td><input type="checkbox" id="get_opt-sgl1w_3" onchange="setParam('get_Opt(SGL1W_3)');"></td>
+		</tr>	
+		<tr>
+			<td>На четвертой шине 1-Wire только один датчик температуры</td>
+			<td><input type="checkbox" id="get_opt-sgl1w_4" onchange="setParam('get_Opt(SGL1W_4)');"></td>
+		</tr>	
+		<tr>
+			<td><b>Начальные настройки <input type="checkbox" id="manual_override" onchange="if(this.checked) { if(confirm('ВЫ УВЕРЕНЫ?')) show_all(this); else this.checked = false; }"></b></td><td></td>
+		</tr>
+		<tr>
+			<td>Всего использовано воды, м³</td>
+			<td nowrap><input id="get_wst" type="number" disabled> <input type="submit" value=">" onclick="if(confirm('ВЫ УВЕРЕНЫ?')) setParam('get_WST');" disabled></td>
+		</tr>
+		<tr>
+			<td>Итого регенераций обезжелезивателя</td>
+			<td nowrap><input id="get_wsrc" type="number" disabled> <input type="submit" value=">" onclick="if(confirm('ВЫ УВЕРЕНЫ?')) setParam('get_WSRC');" disabled></td>
+		</tr>
+		<tr>
+			<td>Итого регенераций умягчителя</td>
+			<td nowrap><input id="get_wsrsc" type="number" disabled> <input type="submit" value=">" onclick="if(confirm('ВЫ УВЕРЕНЫ?')) setParam('get_WSRSC');" disabled></td>
+		</tr>
+	</tbody>
+	</table>
+	<br>
+	<input type="submit" value="Сброс настроек" onclick='if(document.getElementById("reset_code").value=="RESET") loadParam("RESET_SETTINGS");'> Введите RESET: <input id="reset_code" size="7">
+</div>	
+</div>
+</body>
+</html>

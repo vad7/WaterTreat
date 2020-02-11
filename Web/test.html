@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>Тестирование. Водоподготовка.</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type='text/javascript' src='scripts.js'></script>
+<script type="text/javascript">
+	window.onload = function() {
+	urlupdate = 2000;
+	loadParam("get_tblRelay");
+	loadParam("get_testMode,get_Opt(DBG)");
+	updateParam("get_remarkTest,get_err"); 
+};
+function loadParam_after(paramid) {
+	if(paramid.indexOf("get_tblRelay")!=-1) {
+		var elements = document.getElementsByName('relay');
+		for(var j = 0; j < elements.length; j++) elements[j].disabled = true;
+	}
+}
+function show_all() {
+	var elements = document.getElementsByTagName('input');
+	for(i=0; i<elements.length; i++) elements[i].disabled = false;
+}
+</script>
+</head>
+<body class="test">
+<div id="menu" class="menu"><script src="menu.js"></script></div>
+<div class="content">
+	<h1>Режим тест</h1>
+	<h2 >Режим работы: <select id="get_testmode" onchange="setParam('get_testMode','get_testmode');"></select></h2>
+	<h3>Описание: <span id="get_remarktest"></span></h3>
+	<h3>Ошибка: <span id="get_err"></span></h3>
+	<h1>Ручное управление</h1>
+	<h3>Внимание! Необдуманные действия при ручном управлении могут повредить оборудование.</h3>
+	<h3>Снятие блокировки <input type="checkbox" id="manual_override" onchange="if(this.checked) show_all(this);"> Отладка в журнал <input type="checkbox" id="get_opt-dbg" onchange="setParam('get_Opt(DBG)')"></h3>
+	<div id="testmode1" >
+		<h2>Реле</h2>
+		<table>
+		<thead>
+		<tr>
+			<th>Имя</th>
+			<th>Описание</th>
+			<th>Pin</th>
+			<th>Управление</th>
+		</tr>
+		</thead>
+		<tbody id="get_tblrelay">
+	</tbody>
+	</table>		
+	</div>
+	<div>
+	<br><br>
+		Радиомодуль ZONT МЛ-489, команда: <input id="radio_cmd"> <input type="submit" value=">" onclick='var Rcmd=document.getElementById("radio_cmd").value; if(Rcmd) loadParam("set_radio_cmd="+encodeURIComponent(Rcmd));'>
+	</div>	
+</div>
+</body>
+</html>
