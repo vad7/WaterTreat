@@ -20,7 +20,7 @@
 #include "Util.h"
 
 // ОПЦИИ КОМПИЛЯЦИИ ПРОЕКТА -------------------------------------------------------
-#define VERSION			  "1.00"				// Версия прошивки
+#define VERSION			  "1.01"				// Версия прошивки
 #define VER_SAVE		  1					// Версия формата сохраняемых данных в I2C память
 //#define LOG                               // В последовательный порт шлет лог веб сервера (логируются запросы)
 #define FAST_LIB                            // использование допиленной библиотеки езернета
@@ -282,6 +282,7 @@ const char *pwm_ACENERGY    = {"E"};               // Суммарная акт�
 const char *pwm_ERRORS  	= {"ERR"};             // Ошибок чтения Modbus
 const char *pwm_RESET		= {"RESET"};
 const char *pwm_TestPower	= {"TP"};
+const char *pwm_ModbusAddr	= {"M"};
 
 // Описание имен параметров уведомлений для функций set_messageSetting get_messageSetting
 const char *mess_MAIL         = {"MAIL"};                // флаг уведомления скидывать на почту
@@ -347,10 +348,10 @@ const char *chart_NONE       = {"NONE"};                    // 0 ничего н
 const char *chart_VOLTAGE    = {"Voltage"};                 // Статистика по напряжению
 const char *chart_CURRENT    = {"Current"};                 // Статистика по току
 const char *chart_fullPOWER  = {"Power"};               // Статистика по Полная мощность
-const char *chart_WaterBoostCount = {"WaterBoost,L"};
-const char *chart_WaterBoost = {"WaterBoost,s"};
-const char *chart_FeedPump   = {"FeedPump,s"};
-const char *chart_FillTank   = {"FillTank,s"};
+const char *chart_WaterBoostCount = {"WaterBoost, L"};
+const char *chart_WaterBoost = {"WaterBoost, s"};
+const char *chart_FeedPump   = {"FeedPump, s"};
+const char *chart_FillTank   = {"FillTank, s"};
 const char *chart_BrineWeight= {"Weight"};
 
 // Описание имен параметров опций   для функций get_option ("get_Opt") set_option ("set_Opt")

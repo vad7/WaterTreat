@@ -169,6 +169,13 @@ uint8_t TaskSuspendAll(void) {
 	return 0;
 }
 
+void vWeb0(void *) __attribute__((naked));
+void vWeb1(void *) __attribute__((naked));
+void vWeb2(void *) __attribute__((naked));
+void vKeysLCD( void * ) __attribute__((naked));
+void vReadSensor(void *) __attribute__((naked));
+void vPumps( void * ) __attribute__((naked));
+void vService(void *) __attribute__((naked));
 
 void setup() {
 	// 1. Инициализация SPI
@@ -463,8 +470,8 @@ x_I2C_init_std_message:
 	//MC.mRTOS=MC.mRTOS+4*configTIMER_TASK_STACK_DEPTH;  // программные таймера (их теперь нет)
 
 	// ПРИОРИТЕТ 4 Высший приоритет
-	if(xTaskCreate(vPumps, "Pumps", 100, NULL, 4, &MC.xHandlePumps) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
-	MC.mRTOS=MC.mRTOS+64+4* 100;
+	if(xTaskCreate(vPumps, "Pumps", 90, NULL, 4, &MC.xHandlePumps) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
+	MC.mRTOS=MC.mRTOS+64+4* 90;
 	//vTaskSuspend(MC.xHandleFeedPump);      // Остановить задачу
 
 	// ПРИОРИТЕТ 3 Очень высокий приоритет
@@ -472,17 +479,17 @@ x_I2C_init_std_message:
 	MC.mRTOS=MC.mRTOS+64+4* 150;
 
 	// ПРИОРИТЕТ 2 средний
-	if(xTaskCreate(vKeysLCD, "KeysLCD", 100, NULL, 4, &MC.xHandleKeysLCD) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
-	MC.mRTOS=MC.mRTOS+64+4* 70;
-	if(xTaskCreate(vService, "Service", 200, NULL, 2, &MC.xHandleService) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
-	MC.mRTOS=MC.mRTOS+64+4* 170;
+	if(xTaskCreate(vKeysLCD, "KeysLCD", 90, NULL, 4, &MC.xHandleKeysLCD) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
+	MC.mRTOS=MC.mRTOS+64+4* 90;
+	if(xTaskCreate(vService, "Service", 180, NULL, 2, &MC.xHandleService) == errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
+	MC.mRTOS=MC.mRTOS+64+4* 180;
 
 	// ПРИОРИТЕТ 1 низкий - обслуживание вебморды в несколько потоков
 	// ВНИМАНИЕ первый поток должен иметь больший стек для обработки фоновых сетевых задач
 	// 1 - поток
 	#define STACK_vWebX 190
-	if(xTaskCreate(vWeb0,"Web0", STACK_vWebX+10,NULL,1,&MC.xHandleUpdateWeb0)==errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
-	MC.mRTOS=MC.mRTOS+64+4*STACK_vWebX+10;
+	if(xTaskCreate(vWeb0,"Web0", STACK_vWebX+5,NULL,1,&MC.xHandleUpdateWeb0)==errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
+	MC.mRTOS=MC.mRTOS+64+4*(STACK_vWebX+5);
 	if(xTaskCreate(vWeb1,"Web1", STACK_vWebX,NULL,1,&MC.xHandleUpdateWeb1)==errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
 	MC.mRTOS=MC.mRTOS+64+4*STACK_vWebX;
 	if(xTaskCreate(vWeb2,"Web2", STACK_vWebX,NULL,1,&MC.xHandleUpdateWeb2)==errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY) set_Error(ERR_MEM_FREERTOS,(char*)nameFREERTOS);
@@ -703,7 +710,7 @@ void vWeb0(void *)
 		} // if (xTaskGetTickCount()-thisTime>10000)
 
 	} //for
-	vTaskDelete( NULL);
+	vTaskSuspend(NULL);
 }
 
 // Второй поток
@@ -713,7 +720,7 @@ void vWeb1(void *)
 		web_server(1);
 		vTaskDelay(TIME_WEB_SERVER / portTICK_PERIOD_MS); // задержка чтения уменьшаем загрузку процессора
 	}
-	vTaskDelete( NULL);
+	vTaskSuspend(NULL);
 }
 // Третий поток
 void vWeb2(void *)
@@ -722,12 +729,12 @@ void vWeb2(void *)
 		web_server(2);
 		vTaskDelay(TIME_WEB_SERVER / portTICK_PERIOD_MS); // задержка чтения уменьшаем загрузку процессора
 	}
-	vTaskDelete( NULL);
+	vTaskSuspend(NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////
-#define LCD_SetupMenuItems	2
 #define LCD_SetupFlag 		0x80000000
+#define LCD_SetupMenuItems	2
 const char *LCD_SetupMenu[LCD_SetupMenuItems] = { "1. Exit", "2. Relays" };
 // Задача Пользовательский интерфейс (MC.xHandleKeysLCD) "KeysLCD"
 void vKeysLCD( void * )
@@ -771,7 +778,7 @@ xSetupExit:
 					lcd.command(LCD_DISPLAYCONTROL | LCD_DISPLAYON);
 					setup = 0;
 				} else if((setup & 0xFF00) == 0x100) {	// menu item 1 selected - Relay
-					MC.dRelay[setup & 0xFF].set_Relay(MC.dRelay[setup & 0xFF].get_Relay() ? -fR_StatusManual : fR_StatusManual);
+					MC.dRelay[setup & 0xFF].set_Relay(MC.dRelay[setup & 0xFF].get_Relay() ? fR_StatusAllOff : fR_StatusManual);
 				} else setup = (setup << 8) | LCD_SetupFlag; // select menu item
 				DisplayTick = ~DisplayTick;
 			} else if(MC.get_errcode() && !Error_Beep_confirmed) Error_Beep_confirmed = true; // Supress beeping
@@ -898,8 +905,7 @@ xSetupExit:
 		}
 		vTaskDelay(KEY_CHECK_PERIOD);
 	}
-
-	vTaskDelete( NULL );
+	vTaskSuspend(NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -967,18 +973,26 @@ void vReadSensor(void *)
 		} else if(++RegBackwashTimer > MC.Option.BackWashFeedPumpDelay) {
 			TimeFeedPump +=	(uint32_t)MC.sFrequency[FLOW].get_Value() * TIME_READ_SENSOR / MC.Option.BackWashFeedPumpMaxFlow;
 		}
-		if(MC.sInput[REG_ACTIVE].get_Input() || MC.sInput[REG_BACKWASH_ACTIVE].get_Input() || MC.sInput[REG2_ACTIVE].get_Input()) {
-			MC.RTC_store.UsedRegen += passed;
-			Stats_WaterRegen_work += passed;
-			History_WaterRegen_work += passed;
-			NeedSaveRTC |= (1<<bRTC_UsedRegen);
-		} else {
-			if(MC.dRelay[RDRAIN].get_Relay()) MC.WorkStats.UsedDrain += passed; else MC.RTC_store.UsedToday += passed;
-			History_WaterUsed_work += passed;
-			NeedSaveRTC |= (1<<bRTC_UsedToday);
+		if(passed) {
+			WaterBoosterCountL += passed;
+			uint32_t utm = rtcSAM3X8.unixtime();
+			if(MC.sInput[REG_ACTIVE].get_Input() || MC.sInput[REG_BACKWASH_ACTIVE].get_Input() || MC.sInput[REG2_ACTIVE].get_Input()) {
+				MC.RTC_store.UsedRegen += passed;
+				Stats_WaterRegen_work += passed;
+				History_WaterRegen_work += passed;
+				NeedSaveRTC |= (1<<bRTC_UsedRegen);
+				MC.WorkStats.UsedLastTime = utm;
+			} else {
+				if(MC.dRelay[RDRAIN].get_Relay() || MC.WorkStats.LastDrain + MC.Option.DrainTime + (TIME_READ_SENSOR/1000) >= utm) {
+					MC.WorkStats.UsedDrain += passed;
+				} else {
+					MC.RTC_store.UsedToday += passed;
+					MC.WorkStats.UsedLastTime = utm;
+				}
+				History_WaterUsed_work += passed;
+				NeedSaveRTC |= (1<<bRTC_UsedToday);
+			}
 		}
-		WaterBoosterCountL += passed;
-		if(passed) MC.WorkStats.UsedLastTime = rtcSAM3X8.unixtime();
 		//
 
 #ifdef USE_UPS
@@ -1032,7 +1046,7 @@ void vReadSensor(void *)
 			if(GetTickCount() - oldTime > (uint32_t)TIME_I2C_UPDATE) // время пришло обновляться надо Период синхронизации внутренних часов с I2C часами (сек)
 			{
 				oldTime = rtcSAM3X8.unixtime();
-				uint32_t t = TimeToUnixTime(getTime_RtcI2C());       // Прочитать время из часов i2c тут проблема
+				uint32_t t = TimeToUnixTime(getTime_RtcI2C());       // Прочитать время из часов i2c
 				if(t) {
 					rtcSAM3X8.set_clock(t);                		 // Установить внутренние часы по i2c
 					int32_t dt = t > oldTime ? t - oldTime : -(oldTime - t);
@@ -1057,7 +1071,7 @@ void vReadSensor(void *)
 		//
 		vReadSensor_delay1ms(TIME_READ_SENSOR - (int32_t)(GetTickCount() - ttime));     // Ожидать время нужное для цикла чтения
 	}  // for
-	vTaskDelete( NULL);
+	vTaskSuspend(NULL);
 }
 
 // Вызывается во время задержек в задаче чтения датчиков, должна быть вызвана перед основным циклом на время заполнения буфера усреднения
@@ -1305,7 +1319,7 @@ xWaterBooster_OFF:
 
 		vTaskDelay(TIME_SLICE_PUMPS); // ms
 	}
-	vTaskDelete( NULL );
+	vTaskSuspend(NULL);
 }
 
 // Service ///////////////////////////////////////////////
@@ -1379,7 +1393,8 @@ void vService(void *)
 					}
 				} else {
 					// Water did not consumed a long time ago.
-					if(MC.Option.DrainAfterNoConsume && rtcSAM3X8.unixtime() - (MC.WorkStats.LastDrain > MC.WorkStats.UsedLastTime ? MC.WorkStats.LastDrain : MC.WorkStats.UsedLastTime) >= MC.Option.DrainAfterNoConsume && !CriticalErrors) {
+					uint32_t ut;
+					if(MC.Option.DrainAfterNoConsume && (ut = rtcSAM3X8.unixtime()) - (MC.WorkStats.UsedLastTime > MC.WorkStats.LastDrain ? MC.WorkStats.UsedLastTime : MC.WorkStats.LastDrain ? MC.WorkStats.LastDrain : ut) >= MC.Option.DrainAfterNoConsume && !CriticalErrors) {
 						MC.WorkStats.LastDrain = rtcSAM3X8.unixtime();
 						TimerDrainingWater = MC.Option.DrainTime;
 						MC.WorkStats.UsedDrain = 0;
@@ -1486,5 +1501,5 @@ void vService(void *)
 		}
 		vTaskDelay(1); // задержка чтения уменьшаем загрузку процессора
 	}
-	vTaskDelete(NULL);
+	vTaskSuspend(NULL);
 }

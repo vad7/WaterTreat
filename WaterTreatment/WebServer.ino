@@ -721,9 +721,12 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 				if((x = strchr(str, '='))) {
 					*x++ = '\0';
 					l_i32 = atoi(x);
+					pm = my_atof(x);
 					i = 1;
+					strcat(strReturn, str);
+					strcat(strReturn, "=");
 				}
-			} else
+			}
 			str += 6;
 			if(strcmp(str, webWS_UsedToday) == 0) _itoa(MC.RTC_store.UsedToday, strReturn); // get_WSUD
 			else if(strcmp(str, webWS_UsedYesterday) == 0) _itoa(MC.WorkStats.UsedYesterday, strReturn); // get_WSUY
@@ -749,7 +752,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 			else if(strcmp(str, webWS_UsedSinceLastRegenSoftening) == 0) _itoa(MC.WorkStats.UsedSinceLastRegenSoftening + MC.RTC_store.UsedToday, strReturn); // get_WSRSS
 			else if(*str == webWS_UsedDrain) _itoa(MC.WorkStats.UsedDrain, strReturn); // get_WSD
 			else if(*str == webWS_UsedTotal) {  // get_WST
-				if(i) MC.WorkStats.UsedTotal = l_i32; // set_WST=x
+				if(i) MC.WorkStats.UsedTotal = pm * 1000 + 0.0005f; // set_WST=x
 				_dtoa(strReturn, MC.WorkStats.UsedTotal + MC.RTC_store.UsedToday, 3);
 			} else if(*str == webWS_UsedAverageDay) _itoa(MC.WorkStats.UsedAverageDay / MC.WorkStats.UsedAverageDayNum, strReturn); // get_WSA
 			else if(*str == webWS_WaterBoosterCountL) {
@@ -1273,8 +1276,8 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 						i = OK;
 						if(strncmp(str, "set", 3) == 0) {
 							// strtol - NO REENTRANT FUNCTION!
-							if(*y == 'w') i = Modbus.writeHoldingRegisters16(id, par, strtol(z, NULL, 0)); // 1 register (int16).
-							else if(*y == 'l') i = Modbus.writeHoldingRegisters32(id, par, strtol(z, NULL, 0)); // 2 registers (int32).
+							if(*y == 'h') i = Modbus.writeHoldingRegisters16(id, par, strtol(z, NULL, 0)); // 1 register (int16).
+							//else if(*y == 'l') i = Modbus.writeHoldingRegisters32(id, par, strtol(z, NULL, 0)); // 2 registers (int32).
 							else if(*y == 'f') i = Modbus.writeHoldingRegistersFloat(id, par, strtol(z, NULL, 0)); // 2 registers (float).
 							else if(*y == 'c') i = Modbus.writeSingleCoil(id, par, atoi(z));	// coil
 							else goto x_FunctionNotFound;
@@ -1288,7 +1291,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 								if((i = Modbus.readInputRegisters32(id, par, (uint32_t *)&l_i32)) == OK) _itoa(l_i32, strReturn);
 							} else if(*y == 'i') {
 								if((i = Modbus.readInputRegistersFloat(id, par, &pm)) == OK) _ftoa(strReturn, pm, 2);
-							} else if(*y == 'f') {
+							} else if(*y == 'h') {
 								if((i = Modbus.readHoldingRegisters16(id, par, &par)) == OK) _itoa(par, strReturn);
 							} else if(*y == 'f') {
 								if((i = Modbus.readHoldingRegistersFloat(id, par, &pm)) == OK) _ftoa(strReturn, pm, 2);
