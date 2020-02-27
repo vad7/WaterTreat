@@ -29,13 +29,9 @@
 
 extern "C" void TaskGetRunTimeStats(void);
 extern void  get_txtSettings(uint8_t thread);
-extern void  get_fileState(uint8_t thread);
-extern void  get_fileSettings(uint8_t thread);
 extern void  get_txtJournal(uint8_t thread);
-extern uint16_t get_csvStatistic(uint8_t thread);
 extern void  get_datTest(uint8_t thread);
 extern void  get_indexNoSD(uint8_t thread);
-extern void  noCsvStatistic(uint8_t thread);
 
 
 // Названия режимов теста
@@ -682,7 +678,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 					goto xSaveStats;
 				//}
 			} else {
-				l_i32 = MC.save();   // записать настройки в еепром, а потом будем их писать и получить размер записываемых данных
+				l_i32 = MC.save();   // записать настройки в еепром и получить размер записываемых данных
 				_itoa(l_i32, strReturn); // сохранение настроек ВСЕХ!
 				MC.save_WorkStats();
 			}
@@ -874,10 +870,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 				strcat(strReturn, "Настройки сброшены - перезагрузите контроллер.");
 			} else if (strcmp(str,"ERR")==0) // RESET_ERR
 			{
-				memset(Errors, 0, sizeof(Errors));
-				memset(ErrorsTime, 0, sizeof(ErrorsTime));
-				CriticalErrors = 0;
-				MC.eraseError();
+				MC.clear_all_errors();
 			}
 			ADD_WEBDELIM(strReturn); continue;
 		}
