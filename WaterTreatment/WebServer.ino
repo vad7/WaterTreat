@@ -753,6 +753,17 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 			} else if(*str == webWS_UsedAverageDay) _itoa(MC.WorkStats.UsedAverageDay / MC.WorkStats.UsedAverageDayNum, strReturn); // get_WSA
 			else if(*str == webWS_WaterBoosterCountL) {
 				if(WaterBoosterCountL == 0) strcat(strReturn, "-"); else _itoa(-WaterBoosterCountL, strReturn); // get_WSB
+			} else if(*str == webWS_Velocity) { // get_WSV
+				l_i32 = MC.sInput[REG_ACTIVE].get_Input() || MC.sInput[REG_BACKWASH_ACTIVE].get_Input();
+				l_i32 |= MC.sInput[REG2_ACTIVE].get_Input() << 1;
+				if(l_i32) { // regen in process
+					strcat(strReturn, "Скорость фильтрации, мч: ");
+					if(l_i32 & 1) {
+						_dtoa(strReturn, MC.CalcFilteringSpeed(MC.FilterTankSquare), 3); // regen Iron in process
+						if(l_i32 & 2) strcat(strReturn, ", ");
+					}
+					if(l_i32 & 2) _dtoa(strReturn, MC.CalcFilteringSpeed(MC.FilterTankSoftenerSquare), 3); // regen Soft in process
+				}
 			}
 			ADD_WEBDELIM(strReturn); continue;
 		}
@@ -824,8 +835,8 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 				journal.jprintf("Reset RAM journal.\n");
 #else                      // Журнал в ЕЕПРОМ
 				journal.Format();
-				strcat(strReturn, "OK");
 #endif
+				strcat(strReturn, "OK");
 			} else if (strcmp(str,"DUE")==0)   // RESET_DUE, Команда сброса контроллера
 			{
 				//strcat(strReturn,"Сброс контроллера, подождите 10 секунд . . .");
@@ -835,7 +846,8 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 				Stats.SaveHistory(0);
 				NeedSaveRTC = RTC_SaveAll;
 				update_RTC_store_memory();
-				ResetDUE_countdown = 3;
+				ResetDUE_countdown = 4;
+				strcat(strReturn, "OK");
 			} else if(strncmp(str, "CNT", 3) == 0) { // Команда RESET_CNT
 				str += 3;
 				if(strncmp(str, "_VAR_", 5) == 0) {	// RESET_CNT_VAR_xx=n
@@ -965,7 +977,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 #else
 			strcat(strReturn,"RAM memory;");
 #endif
-			strcat(strReturn,"JOURNAL_LEN|Размер кольцевого буфера системного журнала (байт)|");_itoa(JOURNAL_LEN,strReturn);//strcat(strReturn,";");
+			strcat(strReturn,"JOURNAL_LEN|Размер буфера журнала (байт)|");_itoa(JOURNAL_LEN,strReturn);//strcat(strReturn,";");
 			ADD_WEBDELIM(strReturn) ;
 			continue;
 		} // end CONST1
@@ -989,18 +1001,23 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 
 				strcat(strReturn, "Входное напряжение питания контроллера, V:|");
 				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "если ниже %.1d - сброс;", ((SUPC->SUPC_SMMR & SUPC_SMMR_SMTH_Msk) >> SUPC_SMMR_SMTH_Pos) + 19);
-				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Режим safeNetwork (%sадрес:%d.%d.%d.%d шлюз:%d.%d.%d.%d)|%s;", defaultDHCP ?"DHCP, ":"",defaultIP[0],defaultIP[1],defaultIP[2],defaultIP[3],defaultGateway[0],defaultGateway[1],defaultGateway[2],defaultGateway[3],MC.safeNetwork ?cYes:cNo);
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Режим safeNetwork (%sадрес:%d.%d.%d.%d ", defaultDHCP ?"DHCP, ":"",defaultIP[0],defaultIP[1],defaultIP[2],defaultIP[3]);
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "шлюз:%d.%d.%d.%d)|%s;", defaultGateway[0],defaultGateway[1],defaultGateway[2],defaultGateway[3],MC.safeNetwork ?cYes:cNo);
 				//strcat(strReturn,"Уникальный ID чипа SAM3X8E|");
 				//getIDchip(strReturn); strcat(strReturn,";");
 				//strcat(strReturn,"Значение регистра VERSIONR сетевого чипа WizNet (51-w5100, 3-w5200, 4-w5500)|");_itoa(W5200VERSIONR(),strReturn);strcat(strReturn,";");
 
-				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Состояние системы (день недели: %d)|Err:%d(%X) B:%d %s%s Day:%d Reg:%d;", MC.RTC_store.Work & RTC_Work_WeekDay_MASK, MC.get_errcode(), CriticalErrors, WaterBoosterStatus, MC.RTC_store.Work & RTC_Work_Regen_F1 ? "R1 " : "", MC.RTC_store.Work & RTC_Work_Regen_F2 ? "R2 " : "", MC.RTC_store.UsedToday, MC.RTC_store.UsedRegen);
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Состояние системы (день недели: %d)|Err:%d(%X) B:%d ", MC.RTC_store.Work & RTC_Work_WeekDay_MASK, MC.get_errcode(), CriticalErrors, WaterBoosterStatus);
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "%s%s Day:%d Reg:%d;", MC.RTC_store.Work & RTC_Work_Regen_F1 ? "R1 " : "", MC.RTC_store.Work & RTC_Work_Regen_F2 ? "R2 " : "", MC.RTC_store.UsedToday, MC.RTC_store.UsedRegen);
 				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Состояние FreeRTOS при старте (task+err_code) <sup>2</sup>|0x%04X 0x%04X;", lastErrorFreeRtosCode, GPBR->SYS_GPBR[5]);
 
 				startSupcStatusReg |= SUPC->SUPC_SR;                                  // Копим изменения
-				m_snprintf(strReturn += strlen(strReturn), 256, "Регистры контроллера питания (SUPC) SAM3X8E [SMMR MR SR]|0x%08X %08X %08X", SUPC->SUPC_SMMR, SUPC->SUPC_MR, startSupcStatusReg);  // Регистры состояния контроллера питания
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Регистры контроллера питания (SUPC) SAM3X8E [SMMR MR SR]|0x%08X %08X %08X", SUPC->SUPC_SMMR, SUPC->SUPC_MR, startSupcStatusReg);  // Регистры состояния контроллера питания
 				if((startSupcStatusReg|SUPC_SR_SMS)==SUPC_SR_SMS_PRESENT) strcat(strReturn," bad VDDIN!");
 				strcat(strReturn,";");
+
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Площадь фильтрации обезжелезивателя, м2|%.4d;", MC.FilterTankSquare);
+				strReturn += m_snprintf(strReturn += strlen(strReturn), 256, "Площадь фильтрации умягчителя, м2|%.4d;", MC.FilterTankSoftenerSquare);
 
 				STORE_DEBUG_INFO(47);
 				strcat(strReturn,"<b> Времена</b>|;");
@@ -1015,7 +1032,7 @@ xSaveStats:		if((i = MC.save_WorkStats()) == OK)
 				strcat(strReturn,"Счетчик числа повторных соединений MQTT клиента|");_itoa(MC.num_resMQTT,strReturn);strcat(strReturn,";");
 	#endif
 				strcat(strReturn,"Счетчик неудачных ping|");_itoa(MC.num_resPing,strReturn);strcat(strReturn,";");
-				strcat(strReturn,"Счетчик числа ошибок чтения датчиков температуры (DS18x20)|");_itoa(MC.get_errorReadDS18B20(),strReturn);strcat(strReturn,";");
+				strcat(strReturn,"Счетчик числа ошибок чтения датчиков температуры|");_itoa(MC.get_errorReadTemp(),strReturn);strcat(strReturn,";");
 
 				strcat(strReturn,"<b> Глобальные счетчики</b>|;");
 				strcat(strReturn,"Время сброса|"); DecodeTimeDate(MC.WorkStats.ResetTime, strReturn, 3); strcat(strReturn,";");
