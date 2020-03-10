@@ -787,8 +787,8 @@ xSetupExit:
 					LCD_setup = (LCD_setup << 8) | LCD_SetupFlag;
 					if((LCD_setup & 0xFF00) == 0x200) { // Flow check
 						lcd.command(LCD_DISPLAYCONTROL | LCD_DISPLAYON);
-						FlowPulseCounter = FlowPulseCounterRest = 0;
-						_FlowPulseCounterRest = MC.sFrequency[FLOW].PassedRest;
+						FlowPulseCounter = 0;
+						FlowPulseCounterRest = _FlowPulseCounterRest = MC.sFrequency[FLOW].PassedRest;
 					}
 				}
 				DisplayTick = ~DisplayTick;
@@ -837,8 +837,8 @@ xErrorsProcessing:
 			while(!digitalReadDirect(PIN_KEY_DOWN)) vTaskDelay(KEY_DEBOUNCE_TIME);
 			if(LCD_setup) {
 				if((LCD_setup & 0xFF00) == 0x200) { // Flow check
-					FlowPulseCounter = FlowPulseCounterRest = 0;
-					_FlowPulseCounterRest = MC.sFrequency[FLOW].PassedRest;
+					FlowPulseCounter = 0;
+					FlowPulseCounterRest = _FlowPulseCounterRest = MC.sFrequency[FLOW].PassedRest;
 				} else if((LCD_setup & 0xFF) > 0) {
 					LCD_setup--;
 					DisplayTick = ~DisplayTick;
@@ -850,7 +850,7 @@ xErrorsProcessing:
 		if(xTaskGetTickCount() - DisplayTick > DISPLAY_UPDATE) { // Update display
 			// Display:
 			// 12345678901234567890
-			// F: 0.000 m3h > 0.000
+			// 0.000 m3h > 0.000
 			// P: 0.00 Tank: 100 %
 			// Days Fe:123 Soft:123
 			// Day: 0.000 Yd: 0.000
@@ -869,39 +869,36 @@ xErrorsProcessing:
 					// Edges: 41234
 					// Liters: 112.1234
 					// Flow: 2332
-					// Sp: 24.123 54.123
+					// Sp: 124.123  154.123
 					lcd.setCursor(0, 0);
-					lcd.print("Flow: ");
-					dptoa(buf, MC.sFrequency[FLOW].get_Value(), 3);
-					uint32_t l = strlen(buf);
-					buffer_space_padding(buf + l, LCD_COLS - l);
-					lcd.print(buf);
+					strcpy(buf, "Flow: "); buf += 6;
+					buf = dptoa(buf, MC.sFrequency[FLOW].get_Value(), 3);
+					buffer_space_padding(buf, LCD_COLS - (buf - buffer));
+					lcd.print(buffer);
+
 					lcd.setCursor(0, 1);
-					lcd.print("Edges: ");
+					strcpy(buf = buffer, "Edges: "); buf += 7;
 					uint32_t tmp = (FlowPulseCounter * MC.sFrequency[FLOW].get_kfValue() + FlowPulseCounterRest - _FlowPulseCounterRest) / 100;
-					i10toa(tmp, buf, 0);
-					l = strlen(buf);
-					buffer_space_padding(buf + l, LCD_COLS - l);
-					lcd.print(buf);
+					buf += i10toa(tmp, buf, 0);
+					buffer_space_padding(buf, LCD_COLS - (buf - buffer));
+					lcd.print(buffer);
+
 					lcd.setCursor(0, 2);
-					lcd.print("Liters: ");
+					strcpy(buf = buffer, "Liters: "); buf += 8;
 					tmp *= 100;
-					i10toa(tmp / MC.sFrequency[FLOW].get_kfValue(), buf, 0);
-					lcd.print(buf);
-					lcd.print(".");
-					i10toa((uint32_t)(tmp % MC.sFrequency[FLOW].get_kfValue()) * 10000 / MC.sFrequency[FLOW].get_kfValue(), buf, 4);
-					l = strlen(buf);
-					buffer_space_padding(buf + l, LCD_COLS - l);
-					lcd.print(buf);
+					buf += i10toa(tmp / MC.sFrequency[FLOW].get_kfValue(), buf, 0);
+					*buf++ = '.';
+					buf += i10toa((uint32_t)(tmp % MC.sFrequency[FLOW].get_kfValue()) * 10000 / MC.sFrequency[FLOW].get_kfValue(), buf, 4);
+					buffer_space_padding(buf, LCD_COLS - (buf - buffer));
+					lcd.print(buffer);
+
 					lcd.setCursor(0, 3);
-					lcd.print("Sp: ");
-					dptoa(buf, MC.CalcFilteringSpeed(MC.FilterTankSquare), 3);
-					lcd.print(buf);
-					lcd.print(" ");
-					dptoa(buf, MC.CalcFilteringSpeed(MC.FilterTankSoftenerSquare), 3);
-					l = strlen(buf);
-					buffer_space_padding(buf + l, LCD_COLS - l);
-					lcd.print(buf);
+					strcpy(buf = buffer, "Sp: "); buf += 4;
+					buf = dptoa(buf, MC.CalcFilteringSpeed(MC.FilterTankSquare), 3);
+					*buf++ = ' '; *buf++ = ' ';
+					buf = dptoa(buf, MC.CalcFilteringSpeed(MC.FilterTankSoftenerSquare), 3);
+					buffer_space_padding(buf, LCD_COLS - (buf - buffer));
+					lcd.print(buffer);
 
 					DisplayTick = xTaskGetTickCount() - (DISPLAY_UPDATE - 1000);
 					vTaskDelay(KEY_CHECK_PERIOD);
@@ -916,11 +913,15 @@ xErrorsProcessing:
 			} else {
 				lcd.setCursor(0, 0);
 				int32_t tmp = MC.sFrequency[FLOW].get_Value();
-				strcpy(buf, "F:"); buf += 2;
-				if(tmp < 10000) *buf++ = ' ';
 				buf = dptoa(buf, tmp, 3);
-				strcpy(buf, " m3h \x7E"); buf += 6;
-				tmp = MC.WorkStats.UsedSinceLastRegen + MC.RTC_store.UsedToday;
+				strcpy(buf, " m3h "); buf += 5;
+				if(MC.sInput[REG_ACTIVE].get_Input() || MC.sInput[REG_BACKWASH_ACTIVE].get_Input() || MC.sInput[REG2_ACTIVE].get_Input()) {
+					*buf++ = 'R';
+					tmp = MC.RTC_store.UsedRegen;
+				} else {
+					*buf++ = '\x7E';
+					tmp = MC.WorkStats.UsedSinceLastRegen + MC.RTC_store.UsedToday;
+				}
 				if(tmp < 10000) *buf++ = ' ';
 				buf = dptoa(buf, tmp, 3);
 				buffer_space_padding(buf, LCD_COLS - (buf - buffer));
@@ -1057,12 +1058,13 @@ void vReadSensor(void *)
 		} else if(++RegBackwashTimer > MC.Option.BackWashFeedPumpDelay) {
 			TimeFeedPump +=	(uint32_t)MC.sFrequency[FLOW].get_Value() * TIME_READ_SENSOR / MC.Option.BackWashFeedPumpMaxFlow;
 		}
+		WaterBoosterCountL += passed;
+		WaterBoosterCountLrest = MC.sFrequency[FLOW].PassedRest;
 		if(LCD_setup) {
 			FlowPulseCounter += passed;
 			FlowPulseCounterRest = MC.sFrequency[FLOW].PassedRest;
 		}
 		if(passed) {
-			WaterBoosterCountL += passed;
 			uint32_t utm = rtcSAM3X8.unixtime();
 			if(MC.sInput[REG_ACTIVE].get_Input() || MC.sInput[REG_BACKWASH_ACTIVE].get_Input() || MC.sInput[REG2_ACTIVE].get_Input()) {
 				MC.RTC_store.UsedRegen += passed;
@@ -1313,7 +1315,11 @@ void vPumps( void * )
 			MC.dRelay[RBOOSTER1].set_ON();
 			WaterBoosterTimeout = 0;
 			WaterBoosterStatus = 1;
-			MC.ChartWaterBoosterCount.addPoint(WaterBoosterCountL);
+			int32_t i = WaterBoosterCountL * 100 + (WaterBoosterCountLrest - _WaterBoosterCountLrest) * 100 / MC.sFrequency[FLOW].get_kfValue();
+			WaterBoosterCountL = 0;
+			_WaterBoosterCountLrest = WaterBoosterCountLrest;
+			if(History_BoosterCountL == -1) History_BoosterCountL = i; else History_BoosterCountL += i;
+			MC.ChartWaterBoosterCount.addPoint(i);
 		} else if(WaterBoosterStatus > 0) {
 			if(CriticalErrors || (WaterBoosterTimeout >= MC.Option.MinWaterBoostOnTime && press >= MC.sADC[PWATER].get_maxValue())) { // Stopping
 				xWaterBooster_GO_OFF:
@@ -1330,7 +1336,6 @@ void vPumps( void * )
 		} else if(WaterBoosterStatus == -1) {
 			xWaterBooster_OFF:
 			MC.dRelay[RBOOSTER1].set_OFF();
-			WaterBoosterCountL = 0;
 			WaterBoosterTimeout = 0;
 			WaterBoosterStatus = 0;
 		}
