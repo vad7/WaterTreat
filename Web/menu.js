@@ -19,9 +19,9 @@ document.write('\
 	<label for="group-3"><i></i>Конфигурация</label>\
 	<ul>\
 		<li class="sensorsp"><a href="sensorsp.html">Датчики</a></li>\
+		<li class="relay"><a href="relay.html">Датчики, Реле</a></li>\
 		<li class="sensorst"><a href="sensorst.html">Датчики температуры</a></li>\
 		<li class="setsensors"><a href="setsensors.html">Привязка датчиков</a></li>\
-		<li class="relay"><a href="relay.html">Реле</a></li>\
 	</ul>\
 </li>\
 <li class="lan config system files time notice mqtt const has-children">\
